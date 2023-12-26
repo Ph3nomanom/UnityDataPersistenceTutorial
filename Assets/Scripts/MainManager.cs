@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro; // Add this at the top
+
 
 public class MainManager : MonoBehaviour
 {
+    public TMP_Text playerNameText;
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
@@ -17,11 +20,18 @@ public class MainManager : MonoBehaviour
     private int m_Points;
     
     private bool m_GameOver = false;
+    public Text HighScoreText;
 
-    
+
+
     // Start is called before the first frame update
     void Start()
     {
+        if (playerNameText != null)
+        {
+            playerNameText.text = "Player: " + StartMenuManager.PlayerName;
+        }
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,7 +46,28 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        int bestScore = LoadBestScore();
+        if (HighScoreText != null)
+        {
+            HighScoreText.text = $"High Score: {bestScore}";
+        }
     }
+
+    private void SaveBestScore(int score)
+    {
+        int bestScore = PlayerPrefs.GetInt("BestScore", 0);
+        if (score > bestScore)
+        {
+            PlayerPrefs.SetInt("BestScore", score);
+            PlayerPrefs.Save();
+        }
+    }
+
+    private int LoadBestScore()
+    {
+        return PlayerPrefs.GetInt("BestScore", 0);
+    }
+
 
     private void Update()
     {
@@ -72,5 +103,6 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        SaveBestScore(m_Points); // Save best score
     }
 }
