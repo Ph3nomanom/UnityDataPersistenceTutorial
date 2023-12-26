@@ -8,28 +8,31 @@ using TMPro; // Add this at the top
 
 public class MainManager : MonoBehaviour
 {
+    public TMP_Text highScoreText;
     public TMP_Text playerNameText;
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
 
-    public Text ScoreText;
+    public TMP_Text ScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
-    public Text HighScoreText;
+    public TMP_Text HighScoreText;
 
 
 
     // Start is called before the first frame update
     void Start()
     {
+        UpdateHighScoreDisplay();
+        string currentPlayerName = PlayerPrefs.GetString("CurrentPlayer", "Player");
         if (playerNameText != null)
         {
-            playerNameText.text = "Player: " + StartMenuManager.PlayerName;
+            playerNameText.text = $"Player: {currentPlayerName}";
         }
 
         const float step = 0.6f;
@@ -69,6 +72,23 @@ public class MainManager : MonoBehaviour
     }
 
 
+    void UpdateHighScoreDisplay()
+    {
+        int bestScore = PlayerPrefs.GetInt("BestScore", 0);
+        string bestPlayerName = PlayerPrefs.GetString("BestPlayerName", "None");
+
+        if (highScoreText != null)
+        {
+            highScoreText.text = $"High Score: {bestScore}";
+        }
+
+        if (playerNameText != null)
+        {
+            playerNameText.text = $"Best Player: {bestPlayerName}";
+        }
+    }
+
+
     private void Update()
     {
         if (!m_Started)
@@ -104,5 +124,15 @@ public class MainManager : MonoBehaviour
         m_GameOver = true;
         GameOverText.SetActive(true);
         SaveBestScore(m_Points); // Save best score
+
+        int bestScore = PlayerPrefs.GetInt("BestScore", 0);
+        if (m_Points > bestScore)
+        {
+            PlayerPrefs.SetInt("BestScore", m_Points);
+            PlayerPrefs.SetString("BestPlayerName", PlayerPrefs.GetString("CurrentPlayer", ""));
+            PlayerPrefs.Save();
+            UpdateHighScoreDisplay();
+
+        }
     }
 }
